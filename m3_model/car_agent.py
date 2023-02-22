@@ -1,7 +1,10 @@
-from mesa import Agent
 import numpy as np
+from mesa import Agent
 
-class Car(Agent):
+from m3_model.traffic_light_agent import TrafficLightAgent
+
+
+class CarAgent(Agent):
     DIRECTIONS = ['right', 'down', 'left', 'up']
     COLOURS = ('orange', 'blue', 'black', 'purple')
 
@@ -31,7 +34,6 @@ class Car(Agent):
         elif self._direction == 'left':
             self.dx, self.dy = 0, -1
 
-
     def step(self):
         if self.pos in self.model.centre and np.random.rand() < self.turning_rate:
             self.direction = self.model.possible_turns[self.direction][self.pos]
@@ -46,7 +48,7 @@ class Car(Agent):
         # print(self.pos, next_pos, self.direction, self.next_pos)
 
     def near_traffic_light(self):
-        return any([isinstance(obj, TrafficLight) for obj in self.model.grid.get_neighbors(
+        return any([isinstance(obj, TrafficLightAgent) for obj in self.model.grid.get_neighbors(
             self.pos, moore=False, include_center=False)])
 
     def is_before_crossroad(self):
@@ -69,22 +71,3 @@ class Car(Agent):
         else:
             self.waiting = 1
             # self.pos = self.next_pos
-
-
-class TrafficLight(Agent):
-    TRAFFIC_LIGHT_COLOURS = ('red', 'green')
-
-    def __init__(self, unique_id, colour, model):
-        super().__init__(unique_id, model)
-        self.colour = colour
-
-class Field(Agent):
-    FIELD_COLOURS = ('olive', 'dark_green', 'brown')
-
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
-        self.colour = self.random.choice(self.FIELD_COLOURS)
-
-    def step(self):
-        if np.random.rand() < 0.1:
-            self.colour = self.random.choice(self.FIELD_COLOURS)

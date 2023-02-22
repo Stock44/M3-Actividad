@@ -3,7 +3,9 @@ from mesa.time import SimultaneousActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from agents import Car, TrafficLight, Field
+from m3_model.field_agent import FieldAgent
+from m3_model.traffic_light_agent import TrafficLightAgent
+from m3_model.car_agent import CarAgent
 
 import numpy as np
 import random
@@ -16,7 +18,7 @@ def get_grid(model):
     for cell in model.grid.coord_iter():
         agent, x, y = cell
 
-        if isinstance(agent, Car):
+        if isinstance(agent, CarAgent):
             if agent.colour == 'orange':
                 grid[x][y] = 6
             elif agent.colour == 'blue':
@@ -26,7 +28,7 @@ def get_grid(model):
             else:  # black
                 grid[x][y] = 9
 
-        elif isinstance(agent, Field):
+        elif isinstance(agent, FieldAgent):
             if agent.colour == 'brown':
                 grid[x][y] = 3
             elif agent.colour == 'olive':
@@ -34,7 +36,7 @@ def get_grid(model):
             else:  # dark green
                 grid[x][y] = 5
 
-        elif isinstance(agent, TrafficLight):
+        elif isinstance(agent, TrafficLightAgent):
             if agent.colour == 'green':
                 grid[x][y] = 2
             else:  # red
@@ -52,7 +54,7 @@ def get_waiting(model):
     # Por todas las celdas del grid
     for cell in model.grid.coord_iter():
         agent, x, y = cell
-        if isinstance(agent, Car):
+        if isinstance(agent, CarAgent):
             total_waiting_time += agent.waiting
 
     return total_waiting_time
@@ -62,7 +64,7 @@ def get_running(model):
     return model.num_agents - get_waiting(model)
 
 
-class CrossRoad(Model):
+class CrossRoadModel(Model):
     """A model with some number of agents."""
 
     def __init__(self, num_agents=10, half_length=10, traffic_time=10, car_turning_rate=0.1):
@@ -116,7 +118,7 @@ class CrossRoad(Model):
         # Create traffic light agents
         for direction, pos in traffic_light_positions.items():
             col = 'green' if traffic_light_count == 100 else 'red'
-            a = TrafficLight(traffic_light_count, col, self)
+            a = TrafficLightAgent(traffic_light_count, col, self)
 
             self.traffic_lights[direction] = a
             traffic_light_count += 1
@@ -127,17 +129,17 @@ class CrossRoad(Model):
             _, x, y = cell
             # Create field agents
             if np.abs(x - half_length) > 1 and np.abs(y - half_length) > 1 and self.grid.is_cell_empty((x, y)):
-                a = Field(field_count, self)
+                a = FieldAgent(field_count, self)
                 self.schedule.add(a)
                 field_count += 1
                 self.grid.place_agent(a, (x, y))
 
-        # Create Car agents
-        car_colours = random.choices(Car.COLOURS, k=self.num_agents)
-        car_directions = random.choices(Car.DIRECTIONS, k=self.num_agents)
+        # Create CarAgent agents
+        car_colours = random.choices(CarAgent.COLOURS, k=self.num_agents)
+        car_directions = random.choices(CarAgent.DIRECTIONS, k=self.num_agents)
 
         for i, (col, direction) in enumerate(zip(car_colours, car_directions)):
-            a = Car(i, self, col, direction, car_turning_rate)
+            a = CarAgent(i, self, col, direction, car_turning_rate)
             self.schedule.add(a)
 
             # Picks a position and remove it from the availables
@@ -157,12 +159,12 @@ class CrossRoad(Model):
         if self.traffic_counter < self.traffic_time:
             self.traffic_counter += 1
         else:
-            for i, direction in enumerate(Car.DIRECTIONS):
+            for i, direction in enumerate(CarAgent.DIRECTIONS):
                 # print(self.traffic_lights)
                 if self.traffic_lights[direction].colour == 'green':
                     self.traffic_counter = 0
                     self.traffic_lights[direction].colour = 'red'
 
-                    next_i = i + 1 if i < len(Car.DIRECTIONS) - 1 else 0
-                    self.traffic_lights[Car.DIRECTIONS[next_i]].colour = 'green'
+                    next_i = i + 1 if i < len(CarAgent.DIRECTIONS) - 1 else 0
+                    self.traffic_lights[CarAgent.DIRECTIONS[next_i]].colour = 'green'
                     break
