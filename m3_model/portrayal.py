@@ -1,16 +1,18 @@
 from mesa import Agent
 
 from m3_model.field_agent import FieldAgent
-from m3_model.traffic_light_agent import TrafficLightAgent
+from m3_model.traffic_light_agent import TrafficLightAgent, TrafficLightColor
 from m3_model.car_agent import CarAgent
 
 
 def portray_traffic_light(traffic_light: TrafficLightAgent):
     portrayal = {"Filled": "true"}
-    if traffic_light.colour == "green":
+    if traffic_light.color is TrafficLightColor.GREEN:
         portrayal["Color"] = "#00FF00"
-    else:  # red
+    elif traffic_light.color is TrafficLightColor.RED:  # red
         portrayal["Color"] = "#FF0000"
+    else:
+        portrayal["Color"] = "#FFFF00"
     portrayal["Shape"] = "circle"
     portrayal["r"] = 1
     portrayal["Layer"] = 1
@@ -20,23 +22,23 @@ def portray_traffic_light(traffic_light: TrafficLightAgent):
 
 def portray_car(car: CarAgent):
     portrayal = {"Filled": "true"}
-    if car.colour == "orange":
-        portrayal["Color"] = "#FF9C38"
-    elif car.colour == "blue":
-        portrayal["Color"] = "#0000FF"
-    elif car.colour == "purple":
-        portrayal["Color"] = "#D847FF"
-    else:  # black
-        portrayal["Color"] = "#000000"
+    # if car.colour == "orange":
+    #     portrayal["Color"] = "#FF9C38"
+    # elif car.colour == "blue":
+    #     portrayal["Color"] = "#0000FF"
+    # elif car.colour == "purple":
+    #     portrayal["Color"] = "#D847FF"
+    # else:  # black
+    portrayal["Color"] = "#000000"
     portrayal["Shape"] = "circle"
     portrayal["r"] = 1.1
     portrayal["Layer"] = 1
-    if car.waiting == 1:
-        portrayal["text"] = "x"
-        portrayal["text_color"] = "Red"
-    else:
-        portrayal["text"] = ""
-        portrayal["text_color"] = "Green"
+    # if car.waiting == 1:
+    #     portrayal["text"] = "x"
+    #     portrayal["text_color"] = "Red"
+    # else:
+    portrayal["text"] = ""
+    portrayal["text_color"] = "Green"
 
     return portrayal
 
